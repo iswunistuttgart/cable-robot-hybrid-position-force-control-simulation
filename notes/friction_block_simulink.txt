@@ -1,0 +1,38 @@
+function [fricR,fricL]   = ...
+  fcn(torque_R, wheel_velocity_R,visCoeff,statFric,wheel_velocity_L,torque_L)
+
+  fc = 0.8*statFric;
+  
+  if abs(wheel_velocity_R) < 0.001
+    if torque_R > statFric
+      fricR = statFric;
+    elseif torque_R < -statFric
+      fricR = -statFric;
+    else %-statFric < torque_R && torque_R < statFric
+      fricR = torque_R;
+    end
+    
+  else %wheel_velocity_R > 0.1
+%     fricR = (fc + (statFric-fc)*exp(-0.1*abs(wheel_velocity_R))) ...
+%       *sign(wheel_velocity_R) + visCoeff*wheel_velocity_R;
+    fricR = statFric*sign(wheel_velocity_R) + visCoeff*wheel_velocity_R;
+    
+  end
+      
+  if abs(wheel_velocity_L) < 0.001
+    if torque_L > statFric
+      fricL = statFric;
+    elseif torque_L < -statFric
+      fricL = -statFric;
+    else %-statFric < torque_L && torque_L < statFric
+      fricL = torque_L;
+    end
+    
+  else %wheel_velocity_R > 0.1
+%     fricL = (fc + (statFric-fc)*exp(-0.1*abs(wheel_velocity_L))) ...
+%       *sign(wheel_velocity_L) + visCoeff*wheel_velocity_L;
+    fricL = statFric*sign(wheel_velocity_L) + visCoeff*wheel_velocity_L;
+    
+  end
+
+end
