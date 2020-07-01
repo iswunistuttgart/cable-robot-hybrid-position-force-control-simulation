@@ -1,6 +1,9 @@
 clear;
 close all;
 
+load('x_siebenPhasen.mat')
+load('z_siebenPhasen.mat')
+
 %% Modellparameter
 % Mechanik
 D_Trommel = 0.1 ;                   % [m] Der Durchmesser der Trommel von Seilwinde
@@ -39,6 +42,9 @@ T_tot = 1/f_pwm;                 % [s] Totzeit
 % Encoder
 quant_phi = 2*pi/(4096*128*(2^14)); % [rad] Quantisierungsintervall Motorencoder (Wertdiskretisierung)
 
+% Gewichtskraft [ kg m / s2 ]
+g = 9.81;
+
 
 %% Regelung
 % Lageregler
@@ -67,6 +73,9 @@ T_i_control  = 125e-6;       % [s] Abtastzeit des Stromreglers (Nach Datenblatt 
 K_fc = 0.001;
 T_fc = 4;
 
+f_max = 1200*ones(4,1);
+f_min = 50*ones(4,1);
+
 %% Reibung
 %Culomb_reibung
 %Viskose_reibung
@@ -75,47 +84,71 @@ d_visc = 0.7;
 k_stat = 2.5;
 
 %% Robotereigenschaften
-FrameAnchors = [ ...
-    [-4.70;  4.30] ...
-  , [ 3.70;  3.20] ...
-  , [ 3.50; -5.20] ...
-  , [-4.50; -5.00] ...
-];
 
+% ai's:
+        FrameAnchors = [ ...
+            [-4.70,  4.30] ...
+          ; [ 3.70,  3.20] ...
+          ; [ 3.50, -5.20] ...
+          ; [-4.50, -5.00] ...
+        ];
+
+% bi's: 0, da Punktmasse
+       
+% Roboter mit 2 transl. FHG
 % Initial position state
-y0 = [0, 0];
+y0 = [0; 0];
+
+% Roboter hat keine Rotation
+% Initial rotation state
+r0 = [1, 0, 0; 0, 1, 0; 0, 0, 1];
 
 % Initial velocity state
-Dy0 = [0, 0];
+Dy0 = [0; 0];
 
 % Initial pose
-p0 = [y0(1), y0(2)];
+% p0 = [y0(1), y0(2)];
+
+%           P must be formatted as 
+%           [X, Y, Z, R11, R12, R13, R21, R22, R23, R31, R32, R33]
+
+% von links nach rechts [-2 ... 2]m
+x = x_7_phase;
+
+% nach oben und wieder runter [0 ... 2]m
+z = z_7_phase;
+    
+p0 = [x(1), 0, z(1), r0(1), r0(2), r0(3), r0(4), r0(5), r0(6), r0(7), r0(8), r0(9)];
 
 % Platform linear inertia (mass) [ kg ]
 PlatformWeight = 10;
+DirectionOfGravity = [0; -1];
+
+% Platform inertia [ kg*m^2 ]
+
 
 
 %% Seil
-NumberOfCables = 4;
-
-% Initial geometric length
-Cable_InitialLength = vecnorm(FrameAnchors-p0');
-Cable_InitialLength = Cable_InitialLength.*(1 - 5e-3);
-
-% Cable length offset
-Cable_Offset = zeros(1, NumberOfCables);
-
-% Cable elasticities [ N / m ]
-% Cable_Elasticity = 1e5 .* ones(1, NumberOfCables);
-k_elast = 172e3.* ones(1, NumberOfCables);  % [N/m] Steifigkeit   % Wert von Valentin Schmidts Diss
-
-% Cable viscosities [ N s / m ]
-% Cable_Viscosity = Cable_Elasticity.* 0.005;
-d_damp = k_elast.*0.03;
-
-Cable_ReferenceLength = 1 .* ones(1, NumberOfCables);
-
-Elasticity = 5e5;
+% NumberOfCables = 8;
+% 
+% % Initial geometric length
+% Cable_InitialLength = vecnorm(FrameAnchors-p0');
+% Cable_InitialLength = Cable_InitialLength.*(1 - 5e-3);
+% 
+% % Cable length offset
+% Cable_Offset = zeros(1, NumberOfCables);
+% 
+% % Cable elasticities [ N / m ]
+% % Cable_Elasticity = 1e5 .* ones(1, NumberOfCables);
+% k_elast = 172e3.* ones(1, NumberOfCables);  % [N/m] Steifigkeit   % Wert von Valentin Schmidts Diss
+% 
+% % Cable viscosities [ N s / m ]
+% % Cable_Viscosity = Cable_Elasticity.* 0.005;
+% d_damp = k_elast.*0.03;
+% 
+% Cable_ReferenceLength = 1 .* ones(1, NumberOfCables);
+% 
+% Elasticity = 5e5;
 
 %% Sollwertgenerierung
 % Final time of simulation
@@ -123,14 +156,29 @@ tend_sim = 20;
 
 % Stepsize
 stepsize = 5e-5;
-% Time vector
-tsp = tspan(0, tend_sim, 1e-3);
+%stepsize = 1/1000;
 
-% Poses: for now just stick with the initial pose
-p = repmat(p0, numel(tsp), 1);
+% Time vector
+%tsp = tspan(0, tend_sim, 1e-3);
+
+tsp = [0:stepsize:tend_sim,1];
+tsp = transpose(tsp);
+
+% Poses: 7 Phasen Profil
+p = [x, zeros(numel(tsp)-1,1), z...
+        ,ones(numel(tsp)-1,1),zeros(numel(tsp)-1,1),zeros(numel(tsp)-1,1)...
+        , zeros(numel(tsp)-1,1),ones(numel(tsp)-1,1),zeros(numel(tsp)-1,1)...
+        , zeros(numel(tsp)-1,1),zeros(numel(tsp)-1,1),ones(numel(tsp)-1,1)...
+     ];
+
+
+
+%p = p0;
+
+
 
 % Move to diag. corner
-p = [-sin(tsp)*0.4, sin(tsp)*0.4];
+%p = [-sin(tsp)*0.4, sin(tsp)*0.4];
 % p = [-sin(tsp-tend*0.01)*0.5, sin(tsp-tend*0.01)*0.5].*(tsp >= tend*0.08);
 
 % Move left
@@ -140,7 +188,9 @@ p = [-sin(tsp)*0.4, sin(tsp)*0.4];
 % p = [zeros(size(tsp)), linspace(0,0.5,size(tsp,1))'];
 
 % Create pose list as time series object
-in_poselist = timeseries(p, tsp);
+in_poselist = timeseries(p, tsp(1:end-1));
 
 % Vector of refined time output values
 toutput = in_poselist.Time;
+
+
