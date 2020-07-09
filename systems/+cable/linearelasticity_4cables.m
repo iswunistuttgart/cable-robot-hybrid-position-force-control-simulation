@@ -38,10 +38,10 @@ classdef linearelasticity_4cables < matlab.System ...
 %% PUBLIC NON-TUNABLE PROPERTIES
     properties(Nontunable) 
         % Normalized coefficient of elasticity [ kg / m ]
-        Elasticity = 1e6*ones(4,1);
+        Elasticity = 172e3*ones(4,1);  % [N/m] Steifigkeit   % Wert von Valentin Schmidts Diss
 
         % Normalized coefficient of viscosity [ kg / s / m ]
-        Viscosity = 1e3*ones(4,1);
+        Viscosity = 0.03*172e3*ones(4,1);   % D�mpfung     % Annahme (Simulation zeigt Fehler bei keiner D�mpfung, vermutlich wegen Sprung auf Kraftregler)  
 
         % Length of reference for elasticity [ m ]
         Reference_Length = ones(4 ,1);
@@ -99,14 +99,14 @@ classdef linearelasticity_4cables < matlab.System ...
                 if delta_l(i) > 0 
                     f_c_s(i) = delta_l(i)*elas(i);
                 else
-                    %f_c_s(i) = 0;
+                    %f_c_s(i) = 0.1;
                     f_c_s(i) = delta_l(i)*elas(i);
                 end
                 
                 if delta_v(i) > 0
                    	f_c_d(i) = delta_v(i)*visco(i);
                 else
-                    %f_c_d(i) = 0;
+                    %f_c_d(i) = 0.1;
                     f_c_d(i) = delta_v(i)*visco(i);
                 end
             end

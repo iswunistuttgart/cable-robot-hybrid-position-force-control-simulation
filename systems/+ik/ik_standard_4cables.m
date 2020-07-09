@@ -294,7 +294,7 @@ classdef ik_standard_4cables < matlab.System ...
 
             % delta length [Mx1]
             if this.DeltaLength
-                varargout{nout} = [4,2];
+                varargout{nout} = [4,1];
                 nout = nout +1;
             end  
         end

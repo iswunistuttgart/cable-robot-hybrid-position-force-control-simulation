@@ -70,8 +70,11 @@ T_v_control  = 250e-6;       % [s] Abtastzeit des Geschwindigkeitsreglers (2 Aus
 T_i_control  = 125e-6;       % [s] Abtastzeit des Stromreglers (Nach Datenblatt ist T_i_control abh?ngig von f_pwm)
 
 % Seilkraftregler
-K_fc = 0.001;
-T_fc = 4;
+%K_fc = 0.001;
+%T_fc = 4;
+
+K_fc = 0.003964;
+T_fc = 2;
 
 f_max = 1200*ones(4,1);
 f_min = 50*ones(4,1);
@@ -79,9 +82,9 @@ f_min = 50*ones(4,1);
 %% Reibung
 %Culomb_reibung
 %Viskose_reibung
-d_visc = 0.7;
+d_visc = 0.8;
 %Haftreibung
-k_stat = 2.5;
+k_stat = 1;
 
 %% Robotereigenschaften
 
@@ -127,28 +130,9 @@ DirectionOfGravity = [0; -1];
 % Platform inertia [ kg*m^2 ]
 
 
-
-%% Seil
-% NumberOfCables = 8;
-% 
-% % Initial geometric length
-% Cable_InitialLength = vecnorm(FrameAnchors-p0');
-% Cable_InitialLength = Cable_InitialLength.*(1 - 5e-3);
-% 
-% % Cable length offset
-% Cable_Offset = zeros(1, NumberOfCables);
-% 
-% % Cable elasticities [ N / m ]
-% % Cable_Elasticity = 1e5 .* ones(1, NumberOfCables);
-% k_elast = 172e3.* ones(1, NumberOfCables);  % [N/m] Steifigkeit   % Wert von Valentin Schmidts Diss
-% 
-% % Cable viscosities [ N s / m ]
-% % Cable_Viscosity = Cable_Elasticity.* 0.005;
-% d_damp = k_elast.*0.03;
-% 
-% Cable_ReferenceLength = 1 .* ones(1, NumberOfCables);
-% 
-% Elasticity = 5e5;
+%% Seileigenschaften
+k_elast = 172e3;  % [N/m] Steifigkeit   % Wert von Valentin Schmidts Diss
+d_damp = k_elast*0.03;   % D�mpfung     % Annahme (Simulation zeigt Fehler bei keiner D�mpfung, vermutlich wegen Sprung auf Kraftregler)  
 
 %% Sollwertgenerierung
 % Final time of simulation
@@ -165,13 +149,10 @@ tsp = [0:stepsize:tend_sim,1];
 tsp = transpose(tsp);
 
 % Poses: 7 Phasen Profil
-p = [x, zeros(numel(tsp)-1,1), z...
-        ,ones(numel(tsp)-1,1),zeros(numel(tsp)-1,1),zeros(numel(tsp)-1,1)...
-        , zeros(numel(tsp)-1,1),ones(numel(tsp)-1,1),zeros(numel(tsp)-1,1)...
-        , zeros(numel(tsp)-1,1),zeros(numel(tsp)-1,1),ones(numel(tsp)-1,1)...
-     ];
+p = [z, zeros(numel(tsp)-1,1)];
 
-
+% Pose: Linear verfahren in x
+%p = [x, zeros(numel(tsp)-1,1)];
 
 %p = p0;
 
