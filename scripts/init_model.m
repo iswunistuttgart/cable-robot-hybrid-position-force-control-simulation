@@ -4,6 +4,7 @@ close all;
 load('x_siebenPhasen.mat')
 load('z_siebenPhasen.mat')
 
+
 %% Modellparameter
 % Mechanik
 D_Trommel = 0.1 ;                   % [m] Der Durchmesser der Trommel von Seilwinde
@@ -73,8 +74,19 @@ T_i_control  = 125e-6;       % [s] Abtastzeit des Stromreglers (Nach Datenblatt 
 %K_fc = 0.001;
 %T_fc = 4;
 
-K_fc = 0.003964;
-T_fc = 2;
+% Heuristisch ermittelte Parameter
+% K_fc = 0.003964;
+% T_fc = 2;
+
+% Aus Tuning ermittelte Parameter mit gutem Führungsverhalten
+K_fc = 0.004;
+T_fc = 3;
+
+% Konfiguration für "kein Regler"
+% K_fc = 1;
+% T_fc = 0;
+
+
 
 f_max = 1200*ones(4,1);
 f_min = 50*ones(4,1);
