@@ -354,4 +354,7 @@ octave-workspace
 # Project results
 results/
 
+# Large data
+*.mat
+
 # End of https://www.gitignore.io/api/matlab
