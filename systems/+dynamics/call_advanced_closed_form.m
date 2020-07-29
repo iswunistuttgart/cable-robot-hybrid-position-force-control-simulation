@@ -59,7 +59,7 @@ classdef call_closed_form < matlab.System ...
             Wrench          = w;
             ForceMin        = f_min;
          	ForceMax        = f_max;
-          	f_c_soll = closed_form(Wrench, StructureMat, ForceMin, ForceMax);   
+          	f_c_soll = advanced_closed_form(Wrench, StructureMat, ForceMin, ForceMax);   
         end
     end
     

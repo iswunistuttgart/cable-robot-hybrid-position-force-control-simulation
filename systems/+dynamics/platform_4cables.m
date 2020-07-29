@@ -36,7 +36,7 @@ classdef platform_4cables < matlab.System ...
   properties ( Nontunable )
     
     % Platform weight [ kg ]
-    Weight = 5;
+    Weight = 50;
     
   end
     

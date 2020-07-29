@@ -136,7 +136,7 @@ z = z_7_phase;
 p0 = [x(1), 0, z(1), r0(1), r0(2), r0(3), r0(4), r0(5), r0(6), r0(7), r0(8), r0(9)];
 
 % Platform linear inertia (mass) [ kg ]
-PlatformWeight = 10;
+PlatformWeight = 50;
 DirectionOfGravity = [0; -1];
 
 % Platform inertia [ kg*m^2 ]
