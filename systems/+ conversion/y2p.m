@@ -3,31 +3,25 @@
 % 2020-06-11     
 % -----------------
 
-classdef call_closed_form < matlab.System ...
+classdef y2p < matlab.System ...
     & matlab.system.mixin.Propagates ...
     & matlab.system.mixin.CustomIcon
 
 
-% Class: CALL_CLOSED_FORM 
+% Class: Y2P 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Class to call function "advanced closed form"
+    % Class to call transform position and angle to pose
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %
     % More description 
     %
     % Inputs: 
     %
-    %   AT          Structure Matrix
-    %
-    %   w           wrench on robot
-    %
-    %   f_max       upper limit for cable forces
-    %
-    %   f_min       lower limit for cable forces
+    %   y           [3x1] position (x,y) and angle (z) of platform
     %
     % Outputs: 
     %
-    %   f_c_soll    calculated force distribution
+    %   p           [1x6] Pose of the Robot [rx, ry, R11, R12, R21, R22]
     %
    
 
@@ -36,7 +30,7 @@ classdef call_closed_form < matlab.System ...
     
 %% Constructor   
     methods
-        function this = call_closed_form(varargin)
+        function this = y2p(varargin)
             % Support name-value pair arguments when constructing object
             setProperties(this,nargin,varargin{:})
         end
@@ -54,12 +48,13 @@ classdef call_closed_form < matlab.System ...
      
         
     	% Calculate Outputs from Inputs
-        function [f_c_soll] = stepImpl(this,AT, w, f_max, f_min)
-            StructureMat    = AT;
-            Wrench          = w;
-            ForceMin        = f_min;
-         	ForceMax        = f_max;
-          	f_c_soll = advanced_closed_form(Wrench, StructureMat, ForceMin, ForceMax);   
+        function [p] = stepImpl(this,y)
+            p(1:2) = y(1:2);
+            sc = sin(y(3));
+            cc = cos(y(3));
+
+            p (3:6) = [cc, -sc, sc, cc] ;
+  
         end
     end
     

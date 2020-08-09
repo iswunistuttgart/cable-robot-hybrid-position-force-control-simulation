@@ -19,10 +19,10 @@ classdef ik_standard_4cables < matlab.System ...
     %
     %   P       N... number of DOF 
     %           Defines the pose (position T and orientation R) of the platform
-    %           The CDPR has 2 tranlational DOF
+    %           The CDPR has 2 tranlational DOF and 1 rotational DOF
     %
     %           P must be formatted as 
-    %           [X, Y]
+    %           [X, Y, R11, R12, R21, R22]
     %
     %
     % Outputs: 
@@ -31,7 +31,7 @@ classdef ik_standard_4cables < matlab.System ...
     %           vector of absolute cable lengths for the given pose P
     %              
     %
-    %   u       [M x 3]   -> here: [4x3]
+    %   u       [M x 2]   -> here: [4x2]
     %           vector of cable unit vectors pointing away from the
     %           platform
     %
@@ -57,20 +57,24 @@ classdef ik_standard_4cables < matlab.System ...
         
         % Winch/pulley locations (ai)
         FrameAnchors = [ ...
-            [-4.70,  4.30] ...
-          ; [ 3.70,  3.20] ...
-          ; [ 3.50, -5.20] ...
-          ; [-4.50, -5.00] ...
+            [-4.70;  4.30] ...
+          , [ 3.70;  3.20] ...
+          , [ 3.50; -5.20] ...
+          , [-4.50; -5.00] ...
         ];
 
         % Platform anchors (bi)
-        Platform = zeros(4,2);
+        %Platform = zeros(4,2);
+        
+        Platform = (20*[ -0.02 ,   0.02 ,  0.02 , -0.02 ;
+                        -0.01 ,   -0.01 ,  0.01 , 0.01 ]);
+
     
-        % Initial pose [Nx1]
-        InitialPose = zeros(2,1);
+        % Initial pose [6x1]
+        InitialPose = [0; 0; 1; 0; 0; 1];
     
-        % Additional cable length offset [8x1]
-        CableOffset = zeros(4,1);
+        % Additional cable length offset [4x1]
+        CableOffset = zeros(1,4);
         
     end
     
@@ -111,31 +115,38 @@ classdef ik_standard_4cables < matlab.System ...
             % get pose from Input p
         	r = [p(1); p(2)];
             
-            L = zeros(4, 2);
-            l = zeros(4,1);
+            R = [p(3), p(4); p(5), p(6)];
+            
+%             L = zeros(4, 2);
+%             l = zeros(4,1);
+            
+            L = this.FrameAnchors - ( repmat(r, 1, 4) + R * this.Platform );
+            l_ = (sqrt( sum( ( L ).^2, 1)) + this.CableOffset);
+            l = l_';
+            
+            nout = 1;
             
           	% calculate cable lengths inside workspace and add cable offset
-            for i=1:4
-                a = transpose(this.FrameAnchors(i,1:2));
-                
-               
-                nout = 1;
-
-                % calculate cable lengths in K0 with li = ai - r - Rbi 
-                % bi = 0 --> li = ai-r
-                L(i, 1:2) = transpose(a - r);
-                                         
-                % calculate output 1:
-                % absolute cable lengths
-                l(i) = sqrt(L(i,1)^2 + L(i,2)^2) + this.CableOffset(i);
-                
-                
+%             for i=1:4
+%                 a = transpose(this.FrameAnchors(i,1:2));
+%                 b = transpose(this.Platform(i,1:2));
+%                
+%                 nout = 1;
+% 
+%                 % calculate cable lengths in K0 with li = ai - r - Rbi 
+%                 L(i, 1:2) = transpose(a - r - R*b);
+%                                          
+%                 % calculate output 1:
+%                 % absolute cable lengths
+%                 l(i) = sqrt(L(i,1)^2 + L(i,2)^2) + this.CableOffset(i);
+%             end
+%                 
                 
                 % Return unit vectors?
                 if this.UnitVectors && nargout > nout
                     % calculate output 2:
                     % cable unit vectors
-                    varargout{nout} = L ./ l;
+                    varargout{nout} = transpose(L ./ repmat(l_, size(L, 1), 1));
                     
                     nout = nout + 1;
                 end
@@ -146,11 +157,9 @@ classdef ik_standard_4cables < matlab.System ...
                 if nargout > nout && this.DeltaLength
                     % calculate output 3:
                     % delta cable length
-                    varargout{nout} = l- this.InitialCableLength;
+                    varargout{nout} = l_'- this.InitialCableLength;
                     nout = nout +1;
                 end
-
-            end
 
             
         end
@@ -164,7 +173,7 @@ classdef ik_standard_4cables < matlab.System ...
     % INPUTS-----------------------------------
         function validateInputsImpl(this,p)
             % Validate inputs to the step method at initialization
-               	validateattributes(p, {'numeric'}, {'vector', 'numel', 2, 'nonempty', 'finite', 'nonsparse'}, mfilename, 'p');
+               	validateattributes(p, {'numeric'}, {'vector', 'numel', 6, 'nonempty', 'finite', 'nonsparse'}, mfilename, 'p');
         end
         
         

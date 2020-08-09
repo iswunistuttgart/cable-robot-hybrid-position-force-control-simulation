@@ -10,7 +10,7 @@ classdef call_closed_form < matlab.System ...
 
 % Class: CALL_CLOSED_FORM 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Class to call function "advanced closed form"
+    % Class to call function "closed form"
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %
     % More description 

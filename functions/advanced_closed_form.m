@@ -64,7 +64,7 @@ narginchk(4, 4);
 nargoutchk(0, 1);
 
 % Assertion of arguments
-validateattributes(Wrench, {'numeric'}, {'vector', 'numel', 2, 'finite'}, mfilename, 'Wrench', 1);
+validateattributes(Wrench, {'numeric'}, {'vector', 'numel', 3, 'finite'}, mfilename, 'Wrench', 1);
 validateattributes(StructureMatrix, {'numeric'}, {'2d', 'finite', 'nonnan'}, mfilename, 'StructureMatrix', 2);
 validateattributes(ForceMinimum, {'numeric'}, {'vector', 'positive', 'finite'}, mfilename, 'ForceMinimum', 3);
 validateattributes(ForceMaximum, {'numeric'}, {'vector', 'positive', 'finite'}, mfilename, 'ForceMaximum', 4);

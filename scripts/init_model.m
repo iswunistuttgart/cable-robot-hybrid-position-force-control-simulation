@@ -110,16 +110,16 @@ k_stat = 1;
 
 % bi's: 0, da Punktmasse
        
-% Roboter mit 2 transl. FHG
+% Roboter mit 2 transl. FHG und 1 rot. FHG
 % Initial position state
-y0 = [0; 0];
+y0 = [0; 0;0];
 
 % Roboter hat keine Rotation
 % Initial rotation state
 r0 = [1, 0, 0; 0, 1, 0; 0, 0, 1];
 
 % Initial velocity state
-Dy0 = [0; 0];
+Dy0 = [0; 0;0];
 
 % Initial pose
 % p0 = [y0(1), y0(2)];

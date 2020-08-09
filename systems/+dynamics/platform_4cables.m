@@ -19,15 +19,15 @@ classdef platform_4cables < matlab.System ...
     %
     % Inputs: 
     %
-    %   w_c   	2x1 wrench from cable forces and torques (w_c = AT * fc)
+    %   w_c   	3x1 wrench from cable forces and torques (w_c = AT * fc)
     %
     %   w_g   	2x1 wrench from gravitational forces (no torques)
     %
-    %   w_p  	2x1 wrench from process forces and torques
+    %   w_p  	3x1 wrench from process forces and torques
     %
     % Outputs: 
     %
-    %	ddy     2x1 linear acceleration in direction of 2 DOF
+    %	ddy     3x1 linear and rotational acceleration
     %
    
 
@@ -38,6 +38,7 @@ classdef platform_4cables < matlab.System ...
     % Platform weight [ kg ]
     Weight = 50;
     
+    Inertia = 0.1;    
   end
     
 
@@ -45,8 +46,9 @@ classdef platform_4cables < matlab.System ...
     properties ( Access = private )
     
         % mass matrix
-        % the mass matrix is a [2x2] matrix (2 tranlational DOF, no rotation)
-        MassMatrix = zeros(2,2);
+        % the mass matrix is a [3x3] matrix (2 tranlational DOF, 1 rotational DOF)
+        MassMatrix = zeros(3,3);
+        
        
 
 end
@@ -66,9 +68,10 @@ end
         % Setup
         function setupImpl(this, varargin) 
 
-            % Calculate global mass matrix
+            % Calculate global mass matrix, no Inertia
 
-            this.MassMatrix = this.Weight * eye(2);
+            this.MassMatrix = [this.Weight * eye(2),[0;0];0,0,this.Inertia];
+            
         end
 
      
@@ -76,11 +79,14 @@ end
     	% Calculate Outputs from Inputs
         function ddy = stepImpl(this, w_c, w_g, w_p)
 
+            wrench = w_c + [w_g;0] + w_p;
+            % Translation -> Impulssatz
+            % --> F = m*a  --> a = mldvide(m,F)
             
-            % only tranlational movement -> Impulssatz
-            % --> equation to solve: M*dyy = w_c + w_g + w_p
+            % Rotation -> Drallsatz
+            % --> Moment = J*alpha --> alhpa = m1divide(J, Moment)
 
-            ddy = mldivide(this.MassMatrix, w_c + w_g + w_p);
+            ddy = mldivide(this.MassMatrix, wrench);
                  
         end
         
@@ -144,9 +150,9 @@ end
     % INPUTS-----------------------------------
         function validateInputsImpl(this,w_c, w_g, w_p)
             % Validate inputs to the step method at initialization
-            validateattributes(w_c, {'numeric'}, {'vector', 'numel', 2, 'nonnan', 'finite', 'nonsparse'}, mfilename, 'w_c');
+            validateattributes(w_c, {'numeric'}, {'vector', 'numel', 3, 'nonnan', 'finite', 'nonsparse'}, mfilename, 'w_c');
          	validateattributes(w_g, {'numeric'}, {'vector', 'numel', 2, 'nonnan', 'finite', 'nonsparse'}, mfilename, 'w_g');
-            validateattributes(w_p, {'numeric'}, {'vector', 'numel', 2, 'nonnan', 'finite', 'nonsparse'}, mfilename, 'w_p');
+            validateattributes(w_p, {'numeric'}, {'vector', 'numel', 3, 'nonnan', 'finite', 'nonsparse'}, mfilename, 'w_p');
         end
         
         
@@ -214,7 +220,7 @@ end
         function [out1] = getOutputSizeImpl(this)
             % Return size for each output port
 
-            out1 = [2,1];
+            out1 = [3,1];
 
         end
         

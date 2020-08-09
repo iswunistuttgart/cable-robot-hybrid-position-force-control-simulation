@@ -3,40 +3,54 @@
 % 2020-06-11     
 % -----------------
 
-classdef call_closed_form < matlab.System ...
+classdef myclass < matlab.System ...
     & matlab.system.mixin.Propagates ...
     & matlab.system.mixin.CustomIcon
 
 
-% Class: CALL_CLOSED_FORM 
+% Class: MYCLASS 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Class to call function "closed form"
+    % Short description of <MYCLASS>
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %
     % More description 
     %
     % Inputs: 
     %
-    %   AT          Structure Matrix
+    %   U       Description of Input U
     %
-    %   w           wrench on robot
-    %
-    %   f_max       upper limit for cable forces
-    %
-    %   f_min       lower limit for cable forces
     %
     % Outputs: 
     %
-    %   f_c_soll    calculated force distribution
+    %   Y1    	Description of Output Y1
+    %              
+    %
+    %   Y2      Description of Output Y2
     %
    
 
     
+%% PUBLIC NON-TUNABLE PROPERTIES
+    properties(Nontunable) 
+        
+    end
+    
+
+%% PROTECTED DEPENDENT PROPERTIES
+  properties ( Access = protected )
+       
+  end
+  
+
+%% PRIVATE PROPERTIES
+  properties(Access = private)
+      
+  end
 
     
 %% Constructor   
     methods
-        function this = call_closed_form(varargin)
+        function this = myclass(varargin)
             % Support name-value pair arguments when constructing object
             setProperties(this,nargin,varargin{:})
         end
@@ -54,12 +68,9 @@ classdef call_closed_form < matlab.System ...
      
         
     	% Calculate Outputs from Inputs
-        function [f_c_soll] = stepImpl(this,AT, w, f_max, f_min)
-            StructureMat    = AT;
-            Wrench          = w;
-            ForceMin        = f_min;
-         	ForceMax        = f_max;
-          	f_c_soll = advanced_closed_form(Wrench, StructureMat, ForceMin, ForceMax);   
+        function [Y1,Y2] = stepImpl(this, u)
+            
+                     
         end
     end
     
@@ -99,7 +110,11 @@ end
     methods (Access = protected)
        
     % INPUTS-----------------------------------
-       
+        function validateInputsImpl(this,U)
+            % Validate inputs to the step method at initialization
+            
+           end
+        
         
         function flag = isInputSizeLockedImpl(this, index)
             % Return true if input size is not allowed to change while
@@ -110,68 +125,74 @@ end
     
         function num = getNumInputsImpl(this)
             % Define total number of inputs for system with optional inputs
-            num = 4;
+            num = 1;
         end
         
          
-        function [name1, name2, name3, name4] = getInputNamesImpl(this)
+        function name = getInputNamesImpl(this)
             % Return input port names for System block
-            name1 = 'AT';
-            name2 = 'w';
-            name3 = 'f_max';
-            name4 = 'f_min';
+            name = 'u';
         end
         
         
     % OUTPUTS-----------------------------------
         function num = getNumOutputsImpl(this)
             % Define total number of outputs for system with optional outputs
-            num = 1;
+            num = 2;
         end
         
         
-        function name1 = getOutputNamesImpl(this)
+      	function [name1, name2] = getOutputNamesImpl(this)
         	% Return output port names for System block
 
-          	name1 = 'f_c_soll';
+          	name1 = 'Y1';
 
+         	name2 = 'Y2';
             
         end
         
         
-        function out1 = getOutputDataTypeImpl(this)
+        function [out1, out2] = getOutputDataTypeImpl(this)
             % Return data type for each output port
         
             % cable length
             out1 = 'double';
+            
+            % unit length vector
+            out2 = 'double';
   
             
         end
     
     
-        function out1 = isOutputComplexImpl(this)
+        function [out1, out2] = isOutputComplexImpl(this)
             % Return true for each output port with complex data
         
             out1 = false;
-
+            
+            out2 = false;
  
             
         end
  
     
     
-        function out1 = isOutputFixedSizeImpl(this)
+        function [out1, out2] = isOutputFixedSizeImpl(this)
             % Return true for each output port with fixed size
         
             out1 = true;
+
+            out2 = true;
             
         end
         
         
-        function out1 = getOutputSizeImpl(this)
+        function [out1, out2] = getOutputSizeImpl(this)
             % Return size for each output port
 
-            out1 = [4,1];
+            out1 = [8,1];
+
+            out2 = [8,3];
         end
         
     end

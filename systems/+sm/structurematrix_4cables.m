@@ -20,9 +20,9 @@ classdef structurematrix_4cables < matlab.System ...
     %
     %   u  	4x2 matrix of cable unit vectors
     %
-    %   p  	1x2 vector of platform pose
+    %   p  	1x6 vector of platform pose
     %      	p must be formatted as 
-    %     	[X, Y]
+    %     	[X, Y, R11, R12, R21, R22]
     %
     %
     % Outputs: 
@@ -46,7 +46,9 @@ classdef structurematrix_4cables < matlab.System ...
     properties(Nontunable) 
         
         % Platform anchors (bi)
-        Platform = zeros(4,2);
+       % Platform = zeros(4,2);
+        Platform = 20*[ -0.02 ,   0.02 ,  0.02 , -0.02 ;
+                        -0.01 ,   -0.01 ,  0.01 , 0.01 ];
         
     end
     
@@ -77,14 +79,16 @@ classdef structurematrix_4cables < matlab.System ...
             
         	nout = 1;
             
-            % build structure matrix
-            % AT = [u1 ... u8;
-            %       R*b1 x u1 ... R*b8 x u8]
-            % no rotation, 2 tranlational DOF, 4 cables 
-            %       -> AT [2x4] (no torque part, only forces)
+            R = [p(3), p(4); p(5), p(6)];
+            bi = R*this.Platform;
             
-            
-            AT = transpose(u);
+            ui = transpose(u);
+             
+            % torque: dot([bx; by],[uy; -ux])
+            AT = vertcat( ...
+                ui ... % Force part
+                , dot(bi, [ui(2,:); -ui(1,:)]) ... % Torque part
+                );
             
             
             % Return inverse Jacobian?
@@ -134,7 +138,7 @@ classdef structurematrix_4cables < matlab.System ...
     % INPUTS-----------------------------------
         function validateInputsImpl(this,p)
             % Validate inputs to the step method at initialization        
-        	validateattributes(p, {'numeric'}, {'vector', 'numel', 2, 'nonempty', 'finite', 'nonsparse'}, mfilename, 'p');
+        	validateattributes(p, {'numeric'}, {'vector', 'numel', 6, 'nonempty', 'finite', 'nonsparse'}, mfilename, 'p');
            end
         
         
@@ -237,11 +241,11 @@ classdef structurematrix_4cables < matlab.System ...
         function [out1, varargout] = getOutputSizeImpl(this)
             % Return size for each output port
 
-            out1 = [2,4];
+            out1 = [3,4];
             nout = 1;
             
           	if this.inv_Jacobian
-                varargout{nout} = [4,2];
+                varargout{nout} = [4,3];
             	nout = nout +1 ;
             end    
 
